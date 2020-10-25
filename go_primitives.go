@@ -119,7 +119,7 @@ func RegisterGoPrimitives(r Registerer) {
 
 // RegisterGoPrimitivesFluent
 // is like RegisterGoPrimitives, but allows you to chain up calls in a fluent flow syntax
-func RegisterGoPrimitivesFluent(r Registerer) Registerer {
+func RegisterGoPrimitivesFluent(r RegisterSetter) RegisterSetter {
 	RegisterGoPrimitives(r)
 	return r
 }
