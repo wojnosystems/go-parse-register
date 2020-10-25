@@ -7,7 +7,7 @@ import (
 )
 
 func TestValueSetterRegistry_SetValueString(t *testing.T) {
-	reg := Registry{}
+	reg := New()
 
 	reg.Register(reflect.TypeOf((*string)(nil)).Elem(), func(settableDst interface{}, value string) (err error) {
 		v := reflect.ValueOf(settableDst).Elem()
@@ -33,7 +33,7 @@ type valueSetterTestStruct struct {
 }
 
 func TestValueSetterRegistry_SetValueStruct(t *testing.T) {
-	reg := RegisterGoPrimitives(&Registry{})
+	reg := GoPrimitives()
 
 	reg.Register(reflect.TypeOf((*valueSetterTestStruct)(nil)).Elem(), func(settableDst interface{}, value string) (err error) {
 		s := (settableDst).(*valueSetterTestStruct)
