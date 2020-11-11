@@ -54,3 +54,57 @@ func TestValueSetterRegistry_SetValueStruct(t *testing.T) {
 	assert.Equal(t, expected, actual.Name)
 	assert.True(t, actual.IsSet)
 }
+
+func TestValueSetterRegistry_SetValueUnsupported(t *testing.T) {
+	var actual valueSetterTestStruct
+	wasCalled, err := New().SetValue(&actual, "x")
+	assert.NoError(t, err)
+	assert.False(t, wasCalled)
+}
+
+func TestValueSetterRegistry_IsSupported(t *testing.T) {
+	cases := map[string]struct {
+		reg         RegisterSetter
+		settableDst interface{}
+		expected    bool
+	}{
+		"empty": {
+			reg: &Registry{},
+			settableDst: func() *valueSetterTestStruct {
+				return &valueSetterTestStruct{}
+			}(),
+		},
+		"not settable": {
+			reg: &Registry{},
+			settableDst: func() bool {
+				return false
+			}(),
+			expected: false,
+		},
+		"unsupported": {
+			reg: GoPrimitives(),
+			settableDst: func() *valueSetterTestStruct {
+				return &valueSetterTestStruct{}
+			}(),
+		},
+		"supported": {
+			reg: GoPrimitives(),
+			settableDst: func() *bool {
+				v := true
+				return &v
+			}(),
+			expected: true,
+		},
+	}
+
+	for caseName, c := range cases {
+		t.Run(caseName, func(t *testing.T) {
+			actual := c.reg.IsSupported(c.settableDst)
+			if c.expected {
+				assert.True(t, actual, "expected supported but was not")
+			} else {
+				assert.False(t, actual, "expected not supported but was")
+			}
+		})
+	}
+}

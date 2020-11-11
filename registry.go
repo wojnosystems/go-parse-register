@@ -29,20 +29,32 @@ func (r *Registry) Register(t reflect.Type, setter SetValueFunc) Registerer {
 // The registered parser converts the value string to an actual object that the string represents
 // If no handler is registered for the type, handlerCalled is false, if it was called, this will be true.
 // err is returned if there was an error parsing the type that was registered
-func (r *Registry) SetValue(settableDst interface{}, value string) (handlerCalled bool, err error) {
+func (r *Registry) SetValue(settableDst interface{}, value string) (handlerExists bool, err error) {
+	var setter SetValueFunc
+	setter, handlerExists, err = r.getHandler(settableDst)
+	if handlerExists && setter != nil {
+		return true, setter(settableDst, value)
+	}
+	return false, nil
+}
+
+func (r *Registry) IsSupported(settableDst interface{}) (ok bool) {
+	_, ok, _ = r.getHandler(settableDst)
+	return
+}
+
+func (r *Registry) getHandler(settableDst interface{}) (setter SetValueFunc, ok bool, err error) {
 	if !valueSetterRegistryValidateSettableDst(settableDst) {
-		return false, ErrSettableDestination
+		err = ErrSettableDestination
+		return
 	}
 	if r.setters == nil {
-		return false, nil
+		return
 	}
 	sT := reflect.TypeOf(settableDst).Elem()
 	keyName := valueSetterRegistryTypeKey(sT)
-	setter, handlerCalled := r.setters[keyName]
-	if !handlerCalled {
-		return false, nil
-	}
-	return true, setter(settableDst, value)
+	setter, ok = r.setters[keyName]
+	return
 }
 
 // valueSetterRegistryValidateSettableDst ensures that the destination can be set. This is a programmer convenience

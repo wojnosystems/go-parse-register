@@ -14,6 +14,9 @@ type ValueSetter interface {
 	// @param handlerCalled true when a supported type was found and called. This means settableDst was successfully deserialized/parsed. Is false if no handler is found and settableDst was not altered
 	// @param err is returned if value could not be deserialized for any reason, such as being malformed
 	SetValue(settableDst interface{}, value string) (handlerCalled bool, err error)
+
+	// IsSupported tests if the type of settableDst is supported in the registry, true if a handler is registered, false if not
+	IsSupported(settableDst interface{}) (ok bool)
 }
 
 type RegisterSetter interface {
